@@ -927,7 +927,8 @@ body{min-height:100vh;min-height:100dvh}
 .sum .amt{font-style:normal;font-family:var(--mono);font-weight:600;color:#ee4f97;margin-left:6px;white-space:nowrap}
 .sum b.amt{font-style:normal;font-family:var(--mono);font-weight:600;color:#ee4f97;margin-left:0;text-align:right;white-space:nowrap}
 .slc{display:inline-flex;flex-direction:column;align-items:flex-start;gap:4px}.scap{font-size:12px;color:var(--mute);display:flex;align-items:center;gap:4px;margin:0}.scap input{width:56px;padding:4px 6px;font-size:13px;margin:0;border-radius:8px}
-.fsi svg{width:22px;height:22px;display:block}.fsoc{position:absolute;left:0;right:0;top:calc(34% + min(80px,10vw) + 14px);display:flex;justify-content:center;gap:14px;z-index:4}.fsi{width:46px;height:46px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;text-decoration:none;box-shadow:none;border:1.5px solid #26231f;color:#26231f;background:transparent}.fsi.ig,.fsi.ln{background:#d8c8ae;border-color:#d8c8ae;color:#3a3329}</style>
+.fsi svg{width:22px;height:22px;display:block}.fsoc{position:absolute;left:0;right:0;top:calc(34% + min(80px,10vw) + 14px);display:flex;justify-content:center;gap:14px;z-index:4}.fsi{width:46px;height:46px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;text-decoration:none;box-shadow:none;border:1.5px solid #26231f;color:#26231f;background:transparent}.fsi.ig,.fsi.ln{background:#d8c8ae;border-color:#d8c8ae;color:#3a3329}.lno{color:#e03131;font-weight:700;white-space:nowrap}.lkb{margin-left:10px!important;background:#06c755!important;border-color:#06c755!important;color:#fff!important;font-size:15px!important;font-weight:700;padding:9px 22px!important;vertical-align:middle}
+</style>
 </head>
 <body>
 <div id="md"></div>
@@ -1258,7 +1259,7 @@ function render(){
     if(!S.code)S.code="XM"+Math.floor(1000+Math.random()*9000);
     h='<div class="card sum">';
     sc().forEach(function(x){var p=S.pick[x.id];h+='<div><span>'+label(x)+'</span><b class="amt">NT$'+(x.price*S.sel[x.id]+(x.comp||0)*cp(x))+'</b></div><div><span>課程時間</span><b>'+fd(p.d)+' '+p.t+'–'+endT(p.t,x.mins)+'</b></div>'});
-    h+='<div><span>姓名</span><b>'+S.name+'</b></div><div><span>手機</span><b>'+S.phone+'</b></div><div><span>電子信箱</span><b>'+S.email+'</b></div><div><span>LINE 通知</span><b>'+(S.line?esc(S.line.name)+'（已連結）':'未連結 <button type="button" class="mini lkb" data-ll="1">連結 LINE</button>')+'</b></div></div>';
+    h+='<div><span>姓名</span><b>'+S.name+'</b></div><div><span>手機</span><b>'+S.phone+'</b></div><div><span>電子信箱</span><b>'+S.email+'</b></div><div><span>LINE 通知</span><b>'+(S.line?esc(S.line.name)+'（已連結）':'<span class="lno">● 未連結</span><button type="button" class="mini lkb" data-ll="1">連結 LINE</button>')+'</b></div></div>';
     h+='<div class="card sum"><b style="display:block;margin-bottom:6px">匯款資訊</b><div><span>應付金額</span><b style="color:#ee4f97;font-family:var(--mono)">NT$'+total()+'</b></div><div><span>銀行</span><b>國泰世華商業銀行（013）</b></div><div><span>帳號</span><b>699503068595</b></div><div><span>預約編號</span><b>'+S.code+'</b></div></div>'+polHtml()+'<label class="chk"><input type="checkbox" id="ag"><span>我已閱讀並同意課程注意事項與匯款、退改規則</span></label><label>轉帳帳號末五碼</label><input id="l5" inputmode="numeric" maxlength="5" placeholder="完成轉帳後填寫，例：12345"><div class="err" id="er"></div><button class="btn" id="next">我已轉帳，送出預約</button>';
     a.innerHTML=h;
   }else if(S.step===4){
