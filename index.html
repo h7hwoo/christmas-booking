@@ -1111,6 +1111,7 @@ function bkList(){var q=BF.q.trim().toLowerCase();return BK.filter(function(b){
 function acts(b,e){var h="";
   if(e==="pending_payment"||e==="reported"||e==="expired")h+='<button class="mini ok" data-bs="'+b.code+'|paid">標記已收款</button>';
   if(e==="paid")h+='<button class="mini" data-bs="'+b.code+'|pending">改回待核對</button>';
+  if(e!=="cancelled")h+='<button class="mini" data-rs="'+b.code+'">改時間</button>';
   if(e!=="cancelled")h+='<button class="mini" data-bs="'+b.code+'|cancel">取消</button>';
   else h+='<button class="mini" data-bs="'+b.code+'|del">刪除</button>';
   return h}
@@ -1352,6 +1353,7 @@ document.addEventListener("click",function(e){
     if(D.at){AT=D.at;render();return}
     if(D.vw){BV=D.vw;render();return}
     if(D.ci){var q=D.ci.split("|"),b2=BK.filter(function(x){return x.code===q[0]})[0],it=b2&&b2.items[+q[1]];if(it&&!it.cancelled&&CIP!==D.ci){CIP=D.ci;b.textContent="再按一次確認取消";b.classList.add("ask");clearTimeout(CIT);CIT=setTimeout(function(){CIP=null;try{b.textContent="✕";b.classList.remove("ask")}catch(e){}},4000);return}if(it&&!it.cancelled){CIP=null;var pr=itemPrice(it);it.cancelled=true;b2.discount=Math.max(0,(b2.discount||0)-(it.disc||0));b2.total=Math.max(0,b2.total-pr);if(b2.status==="paid")b2.refundDue=(b2.refundDue||0)+pr;if(b2.items.every(function(x){return x.cancelled}))b2.status="cancelled";saveBK();bkRefresh()}return}
+    if(D.rs){openRS(D.rs);return}
     if(D.bs){var pb=D.bs.split("|"),bk=BK.filter(function(x){return x.code===pb[0]})[0];if(bk){if(pb[1]==="paid")bk.status="paid";if(pb[1]==="cancel")bk.status="cancelled";if(pb[1]==="pending")bk.status="reported";if(pb[1]==="del")BK=BK.filter(function(x){return x!==bk});saveBK();bkRefresh()}return}
     if(b.id==="bkdemo"){BK=BK.concat(demoBK());saveBK();render();return}
     if(b.id==="bkclr"){BK=BK.filter(function(x){return !x.demo});saveBK();render();return}
@@ -1482,5 +1484,49 @@ var a=document.getElementById("app");if(a)new MutationObserver(hk).observe(a,{ch
 setTimeout(function(){var c=document.getElementById("cf");if(c)c.classList.add("drop")},60000);
 })();</script>
 <script>(function(){document.addEventListener("pointermove",function(e){Array.prototype.forEach.call(document.querySelectorAll(".mball"),function(m){var r=m.getBoundingClientRect(),cx=r.left+r.width/2,cy=r.top+r.height/2,dx=e.clientX-cx,dy=e.clientY-cy,d=Math.hypot(dx,dy)||1,k=26*Math.min(1,d/160);Array.prototype.forEach.call(m.querySelectorAll(".pup"),function(p){p.style.transform="translate("+(dx/d*k).toFixed(1)+"px,"+(dy/d*k).toFixed(1)+"px)"})})})})();</script>
+<style>
+.rso{position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.45);display:flex;align-items:center;justify-content:center;padding:16px}
+.rsb{width:min(440px,100%);max-height:90vh;overflow-y:auto;background:var(--card,#fff);color:inherit;border:1px solid var(--line,#ddd);border-radius:10px;padding:18px}
+.rsb h3{margin:0 0 4px;font-size:16px}.rsb .rss{font-size:12px;opacity:.6;margin-bottom:12px}
+.rsb label{display:block;font-size:13px;margin:10px 0 4px}
+.rsb select{font:inherit;width:100%;padding:8px 10px;border:1px solid var(--line,#ddd);border-radius:10px;background:var(--card,#fff);color:inherit}
+.rsr{display:flex;justify-content:space-between;gap:10px;font-size:13px;padding:8px 0;border-bottom:1px dashed var(--line,#ddd)}
+.rsr b.ok{color:#1fb59a}.rsr b.no{color:#e03131}
+.rsf{display:flex;gap:8px;margin-top:14px}.rsf button{flex:1;font:inherit;font-size:14px;padding:10px;border-radius:10px;border:1px solid var(--line,#ddd);background:var(--card,#fff);color:inherit;cursor:pointer}
+.rsf button.go{background:#1fb59a;border-color:#1fb59a;color:#fff;font-weight:700}.rsf button.go.warn{background:#e03131;border-color:#e03131}
+</style>
+<script>
+function openRS(code){
+  var b=BK.filter(function(x){return x.code===code})[0];if(!b)return;
+  var go=function(){showRS(b)};
+  if(window.sbCounts)sbCounts(go);else go()}
+function showRS(b){
+  var live=b.items.filter(function(i){return !i.cancelled});if(!live.length)return;
+  var cur=live[0],old=document.getElementById("rso");if(old)old.remove();
+  var days=dl().slice();if(days.indexOf(cur.date)<0)days.push(cur.date);days.sort();
+  var times=tm().slice();if(times.indexOf(cur.time)<0)times.push(cur.time);times.sort();
+  var o=document.createElement("div");o.id="rso";o.className="rso";
+  o.innerHTML='<div class="rsb"><h3>更改上課時間</h3><div class="rss">'+esc(b.code)+'・'+esc(b.name)+'</div>'
+   +'<label>日期</label><select id="rsd">'+days.map(function(d){return '<option value="'+d+'"'+(d===cur.date?' selected':'')+'>'+fd(d)+'</option>'}).join("")+'</select>'
+   +'<label>時段</label><select id="rst">'+times.map(function(t){return '<option value="'+t+'"'+(t===cur.time?' selected':'')+'>'+t+'</option>'}).join("")+'</select>'
+   +'<div id="rsl" style="margin-top:12px"></div><div class="rsf"><button id="rsx">取消</button><button id="rsg" class="go">確認更改</button></div></div>';
+  document.body.appendChild(o);
+  o.addEventListener("click",function(e){e.stopPropagation()});
+  function chk(){var d=document.getElementById("rsd").value,t=document.getElementById("rst").value,bad=false,cl=false,h="";
+    live.forEach(function(i){var c=g(i.course);if(!c)return;var same=i.date===d&&i.time===t;
+      var left=capOf(c,d,t)-booked(c,d,t)+(same?i.people:0),closed=!isOpen(c,d,t);
+      var okk=!closed&&left>=i.people;if(!okk)bad=true;if(closed)cl=true});
+    h='<div class="rsr" style="border:0;justify-content:center;font-size:15px"><b class="'+(bad?'no':'ok')+'">'+(bad?(cl?'此時段未開放':'名額不足，無法更改'):'名額足夠 ✓')+'</b></div>';
+    document.getElementById("rsl").innerHTML=h;
+    var g2=document.getElementById("rsg");g2.className="go";g2.disabled=bad;g2.style.opacity=bad?".35":"";g2.style.cursor=bad?"not-allowed":"";g2.textContent=bad?"名額不足，無法更改":"確認更改"}
+  document.getElementById("rsd").onchange=chk;document.getElementById("rst").onchange=chk;chk();
+  document.getElementById("rsx").onclick=function(){o.remove()};
+  document.getElementById("rsg").onclick=function(){if(this.disabled)return;
+    var d=document.getElementById("rsd").value,t=document.getElementById("rst").value;
+    if(d===cur.date&&t===cur.time){o.remove();return}
+    live.forEach(function(i){i.date=d;i.time=t});
+    saveBK();o.remove();bkRefresh();
+    setTimeout(function(){if(window.sbCounts)sbCounts(function(){})},1500)}}
+</script>
 </body>
 </html>
